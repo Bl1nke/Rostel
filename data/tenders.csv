@@ -1,0 +1,14 @@
+tender_id,title,customer,region,city,category,budget_rub,publication_date,deadline,status,contact_email
+T001,Supply of server and network equipment,Rostov Regional Administration,Rostov Oblast,Rostov-on-Don,IT Infrastructure,4500000,2026-03-01,2026-04-01,Open,it@rostov.gov.ru
+T002,Development of corporate CRM system,Kuban Trade Group,Krasnodar Krai,Krasnodar,Software Development,2800000,2026-02-20,2026-03-25,Open,crm@kubantrade.ru
+T003,Modernization of warehouse logistics,Bataysk Logistics Center,Rostov Oblast,Bataysk,Logistics,6200000,2026-02-15,2026-03-30,Open,logistics@bataysk.ru
+T004,Construction of resort infrastructure,Sochi Development Corporation,Krasnodar Krai,Sochi,Construction,15500000,2026-03-10,2026-04-20,Open,build@sochi-corp.ru
+T005,Implementation of ERP system,Alpha Ltd,Rostov Oblast,Rostov-on-Don,Enterprise Software,1800000,2026-01-25,2026-03-01,Closed,procurement@alpha.ru
+T006,Supply of office furniture,Beta GmbH,Rostov Oblast,Rostov-on-Don,Furniture,950000,2026-02-05,2026-03-05,Open,furniture@beta.ru
+T007,Cybersecurity audit and consulting,Gamma AG,Rostov Oblast,Rostov-on-Don,IT Security,2200000,2026-03-12,2026-04-15,Open,security@gamma.ru
+T008,Cloud migration services,Northstar Ltd,Krasnodar Krai,Krasnodar,Cloud Services,3400000,2026-03-05,2026-04-10,Open,cloud@northstar.ru
+T009,Data analytics platform development,Central Works AG,Krasnodar Krai,Krasnodar,Data Analytics,4700000,2026-02-28,2026-04-05,Open,analytics@centralworks.ru
+T010,Mobile application development,Future Tech GmbH,Krasnodar Krai,Sochi,Mobile Development,1600000,2026-03-15,2026-04-25,Open,mobile@futuretech.ru
+T011,Supply of medical equipment,Westfield Group,Krasnodar Krai,Sochi,Healthcare Equipment,8900000,2026-01-30,2026-03-15,Closed,med@westfield.ru
+T012,Smart city infrastructure project,Metro Business Ltd,Rostov Oblast,Bataysk,Smart City,12000000,2026-03-20,2026-05-01,Open,smartcity@metro.ru
+

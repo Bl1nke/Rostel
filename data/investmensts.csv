@@ -1,0 +1,14 @@
+investment_id,company_id,company_name,region,project_name,amount_rub,investment_year,investment_type,status,expected_roi_percent
+I001,C001,Alpha Ltd,Rostov Oblast,Warehouse Automation Upgrade,8500000,2025,CAPEX,Completed,12.5
+I002,C002,Beta GmbH,Rostov Oblast,Production Line Expansion,22000000,2025,CAPEX,Active,15.2
+I003,C003,Gamma AG,Rostov Oblast,Digital Transformation Program,4500000,2025,OPEX,Active,18.0
+I004,C004,Delta Solutions,Krasnodar Krai,Office Relocation and Fit-out,3200000,2024,CAPEX,Completed,9.8
+I005,C005,Northstar Ltd,Krasnodar Krai,New Distribution Center,55000000,2025,CAPEX,Active,14.7
+I006,C006,Urban Trade GmbH,Krasnodar Krai,Retail Chain Renovation,7800000,2024,CAPEX,Suspended,7.2
+I007,C007,Greenline Services,Krasnodar Krai,Fleet Electrification,12000000,2026,CAPEX,Planned,11.9
+I008,C008,Central Works AG,Krasnodar Krai,R&D Laboratory Construction,31000000,2025,CAPEX,Active,16.4
+I009,C009,Westfield Group,Krasnodar Krai,Hotel Resort Expansion,65000000,2026,CAPEX,Planned,13.1
+I010,C010,Helio Systems,Rostov Oblast,Solar Panel Manufacturing Plant,89000000,2025,CAPEX,Active,20.5
+I011,C011,Metro Business Ltd,Rostov Oblast,Logistics Fleet Renewal,9500000,2024,CAPEX,Cancelled,6.8
+I012,C012,Future Tech GmbH,Krasnodar Krai,AI Research Center,18000000,2026,CAPEX,Planned,22.3
+
