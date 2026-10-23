@@ -1,0 +1,53 @@
+venv/
+.venv/
+env/
+ENV/
+
+
+# Mycop Pyhton
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+.pytest_cache/
+
+# Секреты и локальные настройки
+
+.env
+.env.global.
+.streamlit/secrets.toml
+
+
+# Логи и временные файлы
+
+*.log
+*.tmp
+
+temp/
+exports/
+downloads/ 
+
+# Файлы, которые генерируются при работе
+data/subscriptions.json
+
+# IDE и редакторы
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+
+# Системные файлы
+
+.DB_Store
+Thumbs.db
+desktop.ini
+
+
+# frontend
+
+node_modules/
+dist/
+build/
