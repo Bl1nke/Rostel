@@ -1,14 +1,14 @@
 
-company_id,name,city,revenue_2023,revenue_2024,revenue_2025,employees,customer_status,potential_score
-C001,Alpha Ltd,Rostov-on-Don,350000,420000,500000,20,Potential,85
-C002,Beta GmbH,Rostov-on-Don,2100000,2250000,2400000,150,Current,72
-C003,Gamma AG,Rostov-on-Don,1000000,1100000,1200000,65,Potential,91
-C004,Delta Solutions,Krasnodar,280000,310000,290000,12,Potential,64
-C005,Northstar Ltd,Krasnodar,4500000,4900000,5300000,220,Current,88
-C006,Urban Trade GmbH,Krasnodar,780000,850000,920000,38,Lost,35
-C007,Greenline Services,Krasnodar,620000,700000,810000,30,Potential,79
-C008,Central Works AG,Krasnodar,3200000,3000000,3400000,175,Current,67
-C009,Westfield Group,Sochi,1500000,1700000,1950000,80,Potential,83
-C010,Helio Systems,Bataysk,5100000,5900000,6800000,290,Potential,96
-C011,Metro Business Ltd,Bataysk,950000,900000,870000,45,Lost,28
-C012,Future Tech GmbH,Sochi,200000,350000,520000,15,Potential,94
+company_id,name,city,revenue_2023,revenue_2024,revenue_2025,employees,customer_status,potential_score,industry
+C001,Alpha Ltd,Rostov-on-Don,350000,420000,500000,20,Potential,85,IT Infrastructure
+C002,Beta GmbH,Rostov-on-Don,2100000,2250000,2400000,150,Current,72,Manufacturing
+C003,Gamma AG,Rostov-on-Don,1000000,1100000,1200000,65,Potential,91,IT Infrastructure
+C004,Delta Solutions,Krasnodar,280000,310000,290000,12,Potential,64,Finance
+C005,Northstar Ltd,Krasnodar,4500000,4900000,5300000,220,Current,88,Retail
+C006,Urban Trade GmbH,Krasnodar,780000,850000,920000,38,Lost,35,Retail
+C007,Greenline Services,Krasnodar,620000,700000,810000,30,Potential,79,Logistics
+C008,Central Works AG,Krasnodar,3200000,3000000,3400000,175,Current,67,Manufacturing
+C009,Westfield Group,Sochi,1500000,1700000,1950000,80,Potential,83,Construction
+C010,Helio Systems,Bataysk,5100000,5900000,6800000,290,Potential,96,Manufacturing
+C011,Metro Business Ltd,Bataysk,950000,900000,870000,45,Lost,28,Logistics
+C012,Future Tech GmbH,Sochi,200000,350000,520000,15,Potential,94,IT Infrastructure

@@ -61,8 +61,8 @@ html, body, [class*="css"] {
     #F7F8FC;
 }
 
-[data-testid="stHeader"] { background: transparent; }
-#MainMenu, footer { visibility: hidden; }
+[data-testid="stHeader"] { background: transparent; }в 
+#MainMenu, footer, [data-testid="stAppDeployButton"], .stAppDeployButton { visibility: hidden; }
 
 .block-container {
   max-width: 1440px;
@@ -712,10 +712,41 @@ PAGES: dict[str, dict[str, Any]] = {
 _BASE_RENDERERS: tuple[str, ...] = ("render", "main", "run", "show")
 
 
+#: Ключ session_state, в котором лежат времена правки файлов модулей.
+#: Глобалы самого скрипта Streamlit сбрасывает на каждом rerun, поэтому храним их в сессии.
+_MODULE_MTIMES_KEY = "_module_mtimes"
+
+
+def _module_mtimes() -> dict[str, float]:
+    """Возвращает словарь «имя модуля → время последней правки файла» из состояния сессии."""
+    mtimes = st.session_state.get(_MODULE_MTIMES_KEY)
+    if not isinstance(mtimes, dict):
+        mtimes = {}
+        st.session_state[_MODULE_MTIMES_KEY] = mtimes
+    return mtimes
+
+
 def _import_module(module_name: str) -> ModuleType:
-    """Импортирует модуль команды по имени с учётом горячей перезагрузки."""
+    """Импортирует модуль команды и подхватывает правки файла без перезапуска сервера."""
     importlib.invalidate_caches()
-    return importlib.import_module(f"modules.{module_name}")
+    module = importlib.import_module(f"modules.{module_name}")
+
+    module_path = getattr(module, "__file__", None)
+    if not module_path:
+        return module
+
+    try:
+        mtime = Path(module_path).stat().st_mtime
+    except OSError:
+        return module
+
+    # Перезагружаем модуль только если файл действительно менялся: иначе в sys.modules
+    # осталась бы старая (например, пустая) версия модуля и раздел выглядел бы пустым.
+    mtimes = _module_mtimes()
+    if mtimes.get(module_name) != mtime:
+        mtimes[module_name] = mtime
+        module = importlib.reload(module)
+    return module
 
 
 def _resolve_renderer(
