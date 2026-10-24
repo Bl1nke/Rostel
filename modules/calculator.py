@@ -60,6 +60,8 @@ from decimal import Decimal, getcontext
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
+import streamlit as st
+from .export import export_commercial_proposal, export_to_csv, prepare_crm_data
 
 # Настраиваем точность Decimal – 2 знака после запятой для денег.
 getcontext().prec = 10
@@ -244,6 +246,76 @@ def calculate(params: Dict[str, Any]) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Если модуль запущен напрямую, демонстрируем простую работу
 # ---------------------------------------------------------------------------
+# --- UI wrapper for Streamlit ---------------------------------------------
+
+def _render_header() -> None:
+    st.markdown(
+        """
+        **Введите данные проекта** – калькулятор выдаст диапазон цен,
+        маржинальность и готовые файлы для скачивания.
+        """
+    )
+
+
+def render_calculator() -> None:
+    _render_header()
+
+    # --- сбор параметров ----------------------------------------------------
+    project_name = st.text_input("Название проекта")
+    project_type = st.selectbox(
+        "Тип проекта",
+        options=["IT Infrastructure", "Construction", "Software Development"],
+    )
+    scale_rub = st.number_input("Ориентировочный бюджет (руб.)", min_value=0, step=100_000)
+    region = st.text_input("Регион")
+    deadline = st.date_input("Дата дедлайна")  # возвращает datetime.date
+    financing_scheme = st.selectbox(
+        "Схема финансирования",
+        options=["CAPEX", "OPEX"],
+        index=None,
+    )
+    unique_solutions = st.checkbox("Уникальные решения")
+
+    if st.button("Рассчитать"):
+        params = {
+            "project_name": project_name,
+            "project_type": project_type,
+            "scale_rub": scale_rub,
+            "region": region,
+            "deadline": deadline.isoformat() if deadline else None,
+            "financing_scheme": financing_scheme,
+            "unique_solutions": unique_solutions,
+        }
+
+        result = calculate(params)
+
+        # Показ результата
+        st.json(result, expanded=False)
+
+        # Кнопки экспорта -----------------------------------------------
+        with st.expander("Экспортировать результаты"):
+            csv_path = pathlib.Path("calculator_result.csv")
+            export_to_csv(result, csv_path)
+            with open(csv_path, "rb") as f:
+                st.download_button(
+                    label="Скачать CSV",
+                    data=f.read(),
+                    file_name=csv_path.name,
+                    mime="text/csv",
+                )
+
+            docx_path = export_commercial_proposal(result)
+            with open(docx_path, "rb") as f:
+                st.download_button(
+                    label="Скачать коммерческое предложение (DOCX)",
+                    data=f.read(),
+                    file_name=docx_path.name,
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
+
+# Alias for app.py
+show_calculator = render_calculator
+
 if __name__ == "__main__":
     example = {
         "project_name": "Система мониторинга",
