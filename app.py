@@ -61,8 +61,9 @@ html, body, [class*="css"] {
     #F7F8FC;
 }
 
-[data-testid="stHeader"] { background: transparent; }в 
-#MainMenu, footer, [data-testid="stAppDeployButton"], .stAppDeployButton { visibility: hidden; }
+[data-testid="stHeader"] { background: transparent; }
+#MainMenu, footer, [data-testid="stAppDeployButton"], .stAppDeployButton,
+[data-testid="stStatusWidget"], .stStatusWidget { visibility: hidden; }
 
 .block-container {
   max-width: 1440px;

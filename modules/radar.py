@@ -27,7 +27,7 @@ import folium
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from folium.plugins import Fullscreen, HeatMap
+from folium.plugins import HeatMap
 from streamlit_folium import st_folium
 
 # ---------------------------------------------------------------------------
@@ -735,8 +735,6 @@ def build_heatmap(
         tiles="OpenStreetMap",
         control_scale=True,
     )
-    Fullscreen(position="topright").add_to(fmap)
-    
     heat_data = [
         [float(row["lat"]), float(row["lon"]), float(weight)]
         for (_, row), weight in zip(aggregate.iterrows(), weights)
@@ -799,7 +797,6 @@ def build_heatmap(
             ).add_to(points_layer)
         points_layer.add_to(fmap)
 
-    folium.LayerControl(collapsed=False, position="topright").add_to(fmap)
     fmap.get_root().html.add_child(
         folium.Element(_legend_html(weight_label, weight_low, weight_high, weight_key))
     )
