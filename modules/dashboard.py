@@ -94,6 +94,9 @@ MONTH_LABELS: tuple[str, ...] = (
 #: Конфиг Plotly: прячем modebar, чтобы экран выглядел как готовый BI-продукт.
 PLOTLY_CONFIG: dict[str, Any] = {"displayModeBar": False}
 
+#: Единая высота блока нижнего ряда (график динамики и таблица Топ-5) — блоки встают ровно.
+DASHBOARD_BLOCK_HEIGHT = 320
+
 DASHBOARD_CSS = """
 <style>
 /* ---------- Заголовок первого экрана ---------- */
@@ -537,7 +540,7 @@ def _dynamics_figure(data: pd.DataFrame) -> go.Figure:
             hovertemplate="<b>%{x}</b><br>Сумма: %{customdata}<extra></extra>",
         )
     )
-    figure.update_layout(**_base_layout(height=360))
+    figure.update_layout(**_base_layout(height=DASHBOARD_BLOCK_HEIGHT))
     figure.update_xaxes(title_text="Месяц", showgrid=False)
     figure.update_yaxes(
         title_text="Сумма, ₽",
@@ -658,13 +661,18 @@ def render() -> None:
         st.plotly_chart(_stage_figure(investments), width="stretch", config=PLOTLY_CONFIG)
 
     st.markdown("---")
-    dynamics_column, deals_column = st.columns([2, 1])
+    dynamics_column, deals_column = st.columns(2)
     with dynamics_column:
         _block_title("📈", "Динамика тендеров по месяцам")
         st.plotly_chart(_dynamics_figure(tenders), width="stretch", config=PLOTLY_CONFIG)
     with deals_column:
         _block_title("🏆", "Топ-5 сделок")
-        st.dataframe(_top_deals_frame(tenders), width="stretch", hide_index=True)
+        st.dataframe(
+            _top_deals_frame(tenders),
+            width="stretch",
+            hide_index=True,
+            height=DASHBOARD_BLOCK_HEIGHT,
+        )
 
     _render_demo_note(companies_demo, tenders_demo, investments_demo)
 
