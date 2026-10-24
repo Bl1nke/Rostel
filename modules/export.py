@@ -1,4 +1,5 @@
-"""Модуль экспорта результатов калькулятора.
+"""
+Модуль экспорта результатов калькулятора.
 
 Предоставляет простые функции для сохранения результата в CSV, подготовки коммерческого предложения по шаблону Docx и создания структуры данных, пригодной для импорта в CRM.  Файлы создаются в рабочей директории проекта; пользователь может изменить путь в аргументах функций.
 
@@ -25,27 +26,6 @@ from docxtpl import DocxTemplate
 # ---------------------------------------------------------------------------
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 TEMPLATE_PATH = BASE_DIR / "templates" / "kp_templates.docx"
-
-# ---------------------------------------------------------------------------
-# Вспомогательные функции
-# ---------------------------------------------------------------------------
-
-def _flatten_dict(d: Dict[str, Any], parent_key: str = "") -> Dict[str, Any]:
-    """Преобразует вложенный словарь в плоский с ключами вида ``parent_child``.
-
-    Это удобно для заполнения шаблонов docx, где обычно используются простые переменные.
-    """
-    items = {}
-    for k, v in d.items():
-        new_key = f"{parent_key}_{k}" if parent_key else k
-        if isinstance(v, dict):
-            items.update(_flatten_dict(v, new_key))
-        elif isinstance(v, list):
-            # Для списков сохраняем как строку JSON‑подобно
-            items[new_key] = str(v)
-        else:
-            items[new_key] = v
-    return items
 
 # ---------------------------------------------------------------------------
 # Экспорт в CSV
@@ -88,8 +68,9 @@ def export_commercial_proposal(
     """Генерирует коммерческое предложение на основе шаблона Docx.
 
     Шаблон должен содержать переменные в формате ``{{variable_name}}``.
-    Функция подставляет все поля из результата (с помощью :func:`_flatten_dict`).
-    Если ``output_path`` не задан, создаётся файл с именем ``proposal_{timestamp}.docx`` в той же папке, что и шаблон.
+    Функция подставляет все поля из результата без изменения структуры (dict + list).
+    Если ``output_path`` не задан, создаётся файл с именем ``proposal_<timestamp>.docx``
+    в той же папке, что и шаблон.
 
     Возвращает путь к сохранённому файлу.
     """
@@ -98,8 +79,8 @@ def export_commercial_proposal(
     if not template_path.is_file():
         raise FileNotFoundError(f"Шаблон {template_path} не найден")
 
-    # Формируем контекст для шаблона
-    ctx = _flatten_dict(result)
+    # Передаём словарь результата напрямую – Docxtpl умеет работать с вложенными dict и list.
+    ctx = result
 
     doc = DocxTemplate(str(template_path))
     doc.render(ctx)
@@ -162,3 +143,4 @@ if __name__ == "__main__":
 
     crm_data = prepare_crm_data(res)
     print("Данные для CRM:", crm_data)
+
