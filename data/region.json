@@ -10,13 +10,6 @@
     "region_id": "R002",
     "name": "Krasnodar Krai",
     "federal_district": "Southern Federal District",
-    "major_cities": [
-      "Krasnodar",
-      "Sochi",
-      "Novorossiysk",
-      "Armavir",
-      "Anapa"
-    ],
     "investment_climate_index": 78.9,
     "tender_activity_index": 88.5
   }
