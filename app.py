@@ -22,11 +22,13 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
+from modules.icons import icon_svg  # noqa: E402  (импорт после правки sys.path)
+
 DEMO_OTP = "1234"
 
 st.set_page_config(
     page_title="Ростелеком | Коммерческий",
-    page_icon="📡",
+    page_icon=":material/radar:",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -71,6 +73,20 @@ html, body, [class*="css"] {
   padding-bottom: 2.5rem;
 }
 
+/* ---------- Иконки (Material Symbols + inline SVG) ---------- */
+.rt-icon-svg {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.15em;
+  flex: 0 0 auto;
+}
+
+/* Монохромные иконки в фирменном цвете внутри «родных» виджетов Streamlit. */
+[data-testid="stMetricLabel"] [data-testid="stIconMaterial"] { color: var(--rt-orange); }
+[data-testid="stSidebar"] [role="radiogroup"] [data-testid="stIconMaterial"] { color: var(--rt-orange); }
+.stTabs [data-baseweb="tab"] [data-testid="stIconMaterial"] { color: var(--rt-orange); }
+
 /* ---------- Сайдбар ---------- */
 [data-testid="stSidebar"] {
   background: linear-gradient(180deg, #FFF7F3 0%, #F2F6FD 52%, #F7F1FB 100%);
@@ -98,6 +114,7 @@ html, body, [class*="css"] {
   height: 42px;
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
   font-size: 1.35rem;
 }
 
@@ -158,6 +175,11 @@ html, body, [class*="css"] {
 .rt-notif-card.blue { border-left-color: var(--rt-blue); }
 .rt-notif-card.purple { border-left-color: var(--rt-purple); }
 .rt-notif-time { display: block; margin-top: 0.15rem; font-size: 0.68rem; color: var(--rt-muted); }
+
+.rt-notif-title .rt-icon-svg { margin-right: 0.32rem; vertical-align: -0.18em; }
+.rt-notif-card > .rt-icon-svg { color: var(--rt-orange); margin-top: 0.06rem; }
+.rt-notif-card.blue > .rt-icon-svg { color: var(--rt-blue); }
+.rt-notif-card.purple > .rt-icon-svg { color: var(--rt-purple); }
 
 /* ---------- Навигация ---------- */
 /* Виджет радио занимает всю ширину сайдбара, как markdown-блоки
@@ -356,6 +378,7 @@ hr { border-color: var(--rt-border); }
   border-radius: 24px;
   background: linear-gradient(135deg, var(--rt-orange) 0%, #FF7A3D 48%, var(--rt-purple) 100%);
   box-shadow: 0 18px 34px rgba(255, 79, 18, 0.3);
+  color: #FFFFFF;
   font-size: 2.1rem;
 }
 
@@ -431,6 +454,7 @@ hr { border-color: var(--rt-border); }
   border-radius: 16px;
   background: #FFFFFF;
   box-shadow: 0 10px 22px rgba(35, 20, 60, 0.1);
+  color: var(--rt-orange);
   font-size: 1.9rem;
 }
 
@@ -517,9 +541,9 @@ def _reset_login_state() -> None:
 def _render_login_screen() -> None:
     """Отрисовывает экран входа с фирменным hero-блоком."""
     st.markdown(
-        """
+        f"""
         <div class="rt-login-hero">
-          <div class="rt-login-logo">📡</div>
+          <div class="rt-login-logo">{icon_svg("radar")}</div>
           <div class="rt-eyebrow">Ростелеком · Коммерческий блок</div>
           <h1 class="rt-hero-title">Портал <span>«Ростелеком коммерческий»</span></h1>
           <p class="rt-hero-sub">Единая точка входа в аналитику, тендеры и инвестиционные решения</p>
@@ -578,7 +602,10 @@ def _render_otp_form() -> None:
         '<div class="rt-form-sub">Шаг 2 из 2 · подтвердите вход</div>',
         unsafe_allow_html=True,
     )
-    st.info("📱 Код отправлен на корпоративный телефон. Для демо введите: 1234")
+    st.info(
+        "Код отправлен на корпоративный телефон. Для демо введите: 1234",
+        icon=":material/sms:",
+    )
 
     with st.form("otp_form"):
         code = st.text_input(
@@ -611,9 +638,9 @@ def _render_otp_form() -> None:
 def _render_sidebar_brand() -> None:
     """Отрисовывает логотип портала и карточку текущего пользователя."""
     st.markdown(
-        """
+        f"""
         <div class="rt-sidebar-brand">
-          <span class="rt-brand-icon">📡</span>
+          <span class="rt-brand-icon">{icon_svg("radar")}</span>
           <div>
             <div class="rt-brand-title">Ростелеком коммерческий</div>
             <div class="rt-brand-caption">ROSTELECOM · B2B</div>
@@ -639,16 +666,22 @@ def _render_sidebar_brand() -> None:
 def _render_notifications_fallback(reason: str | None = None) -> None:
     """Показывает демо-уведомления, пока модуль notifications не готов."""
     st.markdown(
-        """
-        <div class="rt-notif-title">🔔 Уведомления</div>
-        <div class="rt-notif-card">📈 Новый тендер: «ЦОД для ЦФО»
-          <span class="rt-notif-time">10 минут назад</span>
+        f"""
+        <div class="rt-notif-title">{icon_svg("notifications")} Уведомления</div>
+        <div class="rt-notif-card">{icon_svg("trending_up")}
+          <div>Новый тендер: «ЦОД для ЦФО»
+            <span class="rt-notif-time">10 минут назад</span>
+          </div>
         </div>
-        <div class="rt-notif-card blue">📄 Загружен отчёт по региону
-          <span class="rt-notif-time">1 час назад</span>
+        <div class="rt-notif-card blue">{icon_svg("description")}
+          <div>Загружен отчёт по региону
+            <span class="rt-notif-time">1 час назад</span>
+          </div>
         </div>
-        <div class="rt-notif-card purple">💡 Инвест-идея: рост спроса на облака
-          <span class="rt-notif-time">Сегодня</span>
+        <div class="rt-notif-card purple">{icon_svg("lightbulb")}
+          <div>Инвест-идея: рост спроса на облака
+            <span class="rt-notif-time">Сегодня</span>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -680,30 +713,30 @@ def _render_sidebar_notifications() -> None:
 # Роутинг между модулями команды
 # ---------------------------------------------------------------------------
 PAGES: dict[str, dict[str, Any]] = {
-    "📊 Сводный дашборд": {
+    ":material/dashboard: Сводный дашборд": {
         "module": "dashboard",
-        "icon": "📊",
+        "icon": "dashboard",
         "title": "Сводный дашборд",
         "subtitle": "Ключевые показатели коммерческого блока в реальном времени",
         "renderers": ("render_dashboard", "show_dashboard"),
     },
-    "📍 Радар присутствия": {
+    ":material/location_on: Радар присутствия": {
         "module": "radar",
-        "icon": "📍",
+        "icon": "location_on",
         "title": "Радар присутствия",
         "subtitle": "География присутствия и активность по регионам",
         "renderers": ("render_radar", "show_radar"),
     },
-    "💼 Инвест-навигатор": {
+    ":material/business_center: Инвест-навигатор": {
         "module": "navigator",
-        "icon": "💼",
+        "icon": "business_center",
         "title": "Инвест-навигатор",
         "subtitle": "Инвестиционные возможности и приоритетные направления",
         "renderers": ("render_navigator", "render_invest_navigator", "show_navigator"),
     },
-    "🧮 Калькулятор сделок": {
+    ":material/calculate: Калькулятор сделок": {
         "module": "calculator",
-        "icon": "🧮",
+        "icon": "calculate",
         "title": "Калькулятор сделок",
         "subtitle": "Расчёт экономики сделки и скидочных сценариев",
         "renderers": ("render_calculator", "show_calculator"),
@@ -768,10 +801,10 @@ def _render_page_header(config: dict[str, Any]) -> None:
         <div class="rt-page-header">
           <div>
             <div class="rt-eyebrow">Коммерческий блок · Ростелеком</div>
-            <h1>{config['icon']} {config['title']}</h1>
+            <h1>{config['title']}</h1>
             <p>{config['subtitle']}</p>
           </div>
-          <div class="rt-header-badge">{config['icon']}</div>
+          <div class="rt-header-badge">{icon_svg(config['icon'])}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -781,8 +814,9 @@ def _render_page_header(config: dict[str, Any]) -> None:
 def _render_module_placeholder(config: dict[str, Any]) -> None:
     """Показывает заглушку, пока модуль не реализовал точку входа."""
     st.info(
-        f"🔧 Модуль «{config['title']}» подключается командой. "
-        "Раздел уже доступен в навигации."
+        f"Модуль «{config['title']}» подключается командой. "
+        "Раздел уже доступен в навигации.",
+        icon=":material/build:",
     )
     st.markdown("**Ожидаемая точка входа модуля**")
     renderers = ", ".join((*config["renderers"], *_BASE_RENDERERS))
@@ -852,7 +886,8 @@ def main() -> None:
         _render_sidebar_notifications()
         st.markdown("---")
         st.button(
-            "🚪 Выйти",
+            "Выйти",
+            icon=":material/logout:",
             use_container_width=True,
             on_click=_reset_login_state,
         )

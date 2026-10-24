@@ -958,7 +958,7 @@ def render_radar(data_dir: str | Path | None = None) -> None:
     """Render the business-density radar page."""
     base = Path(data_dir) if data_dir is not None else DATA_DIR
 
-    st.title("🗺️ Радар плотности бизнеса")
+    st.title("Радар плотности бизнеса", icon=":material/radar:")
     st.caption(
         "Интерактивная тепловая карта распределения компаний по городам. "
         "Фильтры: выручка и динамика роста. Источник данных — папка data/."
@@ -1056,7 +1056,9 @@ def render_radar(data_dir: str | Path | None = None) -> None:
 
     city_aggregate = aggregate_by_city(selection, revenue_column, growth_column)
 
-    map_tab, analytics_tab, data_tab = st.tabs(["🗺️ Карта", "📊 Аналитика", "📋 Данные"])
+    map_tab, analytics_tab, data_tab = st.tabs(
+        [":material/map: Карта", ":material/analytics: Аналитика", ":material/table_view: Данные"]
+    )
 
     with map_tab:
         saved_view = st.session_state.get("radar_map")
@@ -1315,7 +1317,7 @@ def render_radar(data_dir: str | Path | None = None) -> None:
 if __name__ == "__main__":
     st.set_page_config(
         page_title="Радар плотности бизнеса",
-        page_icon="🗺️",
+        page_icon=":material/map:",
         layout="wide",
     )
     render_radar()
