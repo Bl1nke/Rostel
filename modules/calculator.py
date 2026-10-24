@@ -216,12 +216,7 @@ _RT_BORDER = "#ECE8F5"
 # ============================================================================
 
 def calculate(project_params: dict[str, Any]) -> dict[str, Any]:
-    """Выполняет расчёт стоимости проекта и возвращает результат.
-
-    Raises:
-        ValueError — некорректные параметры, неизвестный регион, прошедший
-        дедлайн.
-    """
+    """Выполняет расчёт стоимости проекта и возвращает результат."""
     object_type_raw = project_params.get("object_type")
     if not object_type_raw:
         raise ValueError("Параметр 'object_type' обязателен.")
@@ -234,7 +229,7 @@ def calculate(project_params: dict[str, Any]) -> dict[str, Any]:
 
     region_id = project_params.get("region_id")
     if not region_id:
-        raise ValueError("Параметр 'region_id' обязателен (регион из data/region.json).")
+        raise ValueError("Параметр 'region_id' обязателен (регион из справочника).")
 
     object_type = _normalize_object_type(object_type_raw)
     base_rate = BASE_RATES[object_type]
@@ -258,8 +253,8 @@ def calculate(project_params: dict[str, Any]) -> dict[str, Any]:
     region_coeff = _get_region_coefficient(str(region_id), region_data)
     if region_coeff is None or region_coeff <= 0:
         raise ValueError(
-            f"Регион {region_id!r} не найден или не содержит корректного "
-            f"'{REGION_CLIMATE_KEY}'."
+            f"Регион {region_id!r} не найден или не содержит корректных данных "
+            f"для расчёта."
         )
 
     financing_coeff = FINANCING_COEFFICIENTS[financing]
@@ -283,7 +278,6 @@ def calculate(project_params: dict[str, Any]) -> dict[str, Any]:
     min_price = optimal_price * 0.9
     max_price = optimal_price * 1.1
 
-    # Конкуренция: полный список открытых тендеров в регионе по категориям.
     open_tenders = _load_open_tenders(
         region_id=str(region_id), region_data=region_data, work_type=work_type
     )
@@ -373,7 +367,7 @@ def calculate(project_params: dict[str, Any]) -> dict[str, Any]:
 
 
 def load_regions(path: str = DEFAULT_REGIONS_FILE) -> dict[str, Any]:
-    """Загружает региональные коэффициенты из JSON."""
+    """Загружает региональные коэффициенты из справочника."""
     import json
 
     try:
@@ -403,10 +397,6 @@ def _load_open_tenders(
     region_data: dict[str, Any],
     work_type: str | None,
 ) -> list[dict[str, Any]] | None:
-    """Возвращает открытые тендеры в регионе по релевантным категориям.
-
-    None — файл недоступен/повреждён, [] — совпадений нет.
-    """
     file_path = _resolve_data_path(_TENDERS_FILE)
     if file_path is None:
         return None
@@ -449,7 +439,6 @@ def _load_open_tenders(
             "deadline": row.get("deadline"),
         })
 
-    # Ближайшие по дедлайну — сверху; при равенстве — крупные по бюджету.
     tenders.sort(
         key=lambda t: (
             str(t.get("deadline") or "9999-12-31"),
@@ -460,7 +449,6 @@ def _load_open_tenders(
 
 
 def _competition_margin_adjustment(open_tenders: int | None) -> float:
-    """Поправка маржи (в долях) по уровню конкуренции."""
     if open_tenders is None:
         return 0.0
     if open_tenders <= 1:
@@ -660,11 +648,6 @@ def _generate_business_insight(
     competition_open_tenders: int | None,
     competition_adj: float,
 ) -> str:
-    """Короткий инсайт: цена, маржа, конкуренция, аналоги.
-
-    Прогноз вероятности победы в тендере НЕ выводится — без данных о
-    конкурентах и истории победителей он был бы недостоверным.
-    """
     if analog_data:
         average = sum(a["amount_rub"] for a in analog_data) / len(analog_data)
         diff_pct = (optimal_price - average) / average * 100.0
@@ -696,9 +679,10 @@ def _generate_business_insight(
 
     return (
         f"Ставка «{object_type}» — {_fmt_price(base_rate)}/м², "
-        f"маржа {margin_percent:.1f}% ({competition_text}). "
+        f"маржа {_fmt_pct(margin_percent)} ({competition_text}). "
         f"Оптимум {_fmt_price(optimal_price)}: {comparison}. "
-        f"Вилка {_fmt_price(min_price)} — {_fmt_price(max_price)}."
+        f"Вилка {_fmt_price(min_price)} — {_fmt_price(max_price)}. "
+        "Оценка основана на доступных рыночных данных."
     )
 
 
@@ -769,8 +753,17 @@ def _fmt_price(value: float | None) -> str:
     return f"{int(round(value)):,}".replace(",", " ") + " ₽"
 
 
+def _fmt_pct(value: float | None) -> str:
+    """Форматирует процент, опуская лишний ноль для целых чисел."""
+    if value is None:
+        return "—"
+    val = float(value)
+    if val.is_integer():
+        return f"{int(val)}%"
+    return f"{val:.1f}%"
+
+
 def _params_signature(p: dict[str, Any]) -> tuple:
-    """Кортеж из входных параметров для сравнения и дедупликации."""
     return (
         str(p.get("object_type") or ""),
         float(p.get("area_sqm") or 0.0),
@@ -805,8 +798,8 @@ def render_calculator() -> None:
     region_data = load_regions()
     if not region_data:
         st.error(
-            "Не удалось загрузить data/region.json. Расчёт невозможен: "
-            "региональные коэффициенты недоступны."
+            "Не удалось загрузить справочник региональных коэффициентов. "
+            "Расчёт временно недоступен."
         )
         return
 
@@ -816,7 +809,6 @@ def render_calculator() -> None:
 
     st.markdown("#### Параметры проекта")
 
-    # Live-часть: тип объекта и дедлайн
     live_left, live_right = st.columns(2)
 
     with live_left:
@@ -845,44 +837,42 @@ def render_calculator() -> None:
             f"{urgency_label} · коэффициент ×{urgency_coeff:.2f}"
         )
 
-    # Форма: остальные поля
-    with st.form("calculator_form", clear_on_submit=False):
-        st.markdown("###### Остальные параметры")
-        form_left, form_right = st.columns(2)
+    st.markdown("###### Остальные параметры")
+    form_left, form_right = st.columns(2)
 
-        with form_left:
-            area_sqm = st.number_input(
-                "Площадь, м²",
-                min_value=1.0,
-                max_value=1_000_000.0,
-                value=1000.0,
-                step=100.0,
-            )
-            region_id = st.selectbox(
-                "Регион",
-                options=list(region_labels.keys()),
-                format_func=lambda rid: region_labels.get(rid, rid),
-            )
-
-        with form_right:
-            financing = st.selectbox(
-                "Финансирование", options=list(FINANCING_COEFFICIENTS.keys()),
-            )
-            work_type = st.selectbox(
-                "Вид работ",
-                options=["(не указано)"] + list(WORK_TYPES_COEFFICIENTS.keys()),
-            )
-            equipment = st.selectbox(
-                "Оборудование", options=list(EQUIPMENT_TYPES.keys()),
-            )
-            unique_solution = st.checkbox("Уникальные технические решения (+10%)")
-
-        submitted = st.form_submit_button(
-            "Рассчитать стоимость",
-            type="primary",
-            use_container_width=True,
-            icon=":material/calculate:",
+    with form_left:
+        area_sqm = st.number_input(
+            "Площадь, м²",
+            min_value=1.0,
+            max_value=1_000_000.0,
+            value=1000.0,
+            step=100.0,
         )
+        region_id = st.selectbox(
+            "Регион",
+            options=list(region_labels.keys()),
+            format_func=lambda rid: region_labels.get(rid, rid),
+        )
+
+    with form_right:
+        financing = st.selectbox(
+            "Финансирование", options=list(FINANCING_COEFFICIENTS.keys()),
+        )
+        work_type = st.selectbox(
+            "Вид работ",
+            options=["(не указано)"] + list(WORK_TYPES_COEFFICIENTS.keys()),
+        )
+        equipment = st.selectbox(
+            "Оборудование", options=list(EQUIPMENT_TYPES.keys()),
+        )
+        unique_solution = st.checkbox("Уникальные технические решения (+10%)")
+
+    submitted = st.button(
+        "Рассчитать стоимость",
+        type="primary",
+        use_container_width=True,
+        icon=":material/calculate:",
+    )
 
     params: dict[str, Any] = {
         "object_type": object_type,
@@ -944,17 +934,17 @@ def render_calculator() -> None:
     kpi[2].metric("Максимум", _fmt_price(result["max_price"]))
     kpi[3].metric(
         "Маржинальность",
-        f"{result['margin_percent']:.1f}%",
+        _fmt_pct(result["margin_percent"]),
         delta=margin_delta,
         help=(
-            f"Базовая маржа по виду работ — {result.get('base_margin_percent', 0):.1f}%, "
-            "плюс поправка на конкуренцию."
+            f"Базовая маржа по виду работ — {_fmt_pct(result.get('base_margin_percent', 0))}, "
+            "с учетом поправки на конкурентную среду."
         ),
     )
     kpi[4].metric(
         "Кол-во аналогов",
         analog_display,
-        help="Сколько сопоставимых проектов из data/investmensts.csv использовано.",
+        help="Количество сопоставимых проектов, найденных в архиве исторических данных.",
     )
 
     cost = result.get("cost_of_goods_sold")
@@ -963,8 +953,14 @@ def render_calculator() -> None:
     optimal = result["optimal_price"]
     if cost is not None and margin is not None:
         profit_value = profit if profit is not None else (optimal - cost)
+        margin_caption = f"**Маржинальность {_fmt_pct(margin)}**"
+        if result.get("target_margin_percent") is not None:
+            margin_caption += (
+                f" (целевая — {_fmt_pct(result['target_margin_percent'])}, "
+                "диапазон 20–25%)"
+            )
         st.info(
-            f"**Маржинальность {margin:.1f}%** — это {_fmt_price(profit_value)} "
+            f"{margin_caption} — это {_fmt_price(profit_value)} "
             f"прибыли при цене {_fmt_price(optimal)} "
             f"(цена − себестоимость {_fmt_price(cost)}).",
             icon=":material/savings:",
@@ -983,18 +979,17 @@ def render_calculator() -> None:
         st.caption(
             f"Конкуренция: **{competition_open}** открытых тендеров в регионе "
             f"по направлению → поправка к марже **{sign}{competition_adj:.1f} п.п.** "
-            f"(базовая {result.get('base_margin_percent', 0):.1f}%, "
-            f"итог {result['margin_percent']:.1f}%). {comp_text}"
+            f"(базовая {_fmt_pct(result.get('base_margin_percent', 0))}, "
+            f"итог {_fmt_pct(result['margin_percent'])}). {comp_text}"
         )
 
-    # ---------- Активные тендеры (краткая информация) ----------
+    # ---------- Активные тендеры ----------
     competition_tenders = result.get("competition_tenders") or []
     if competition_open and competition_open > 0 and competition_tenders:
         st.markdown("##### Активные тендеры в нише")
         st.caption(
-            "Это открытые закупки в выбранном регионе по направлению работ — "
-            "по ним оценивается конкуренция. Аналоги (ниже, bar chart) — это "
-            "другое: исторические инвестпроекты для сравнения цен."
+            "Информация о закупках в выбранном регионе по вашему направлению. "
+            "Анализ конкурентной среды основан на реестре открытых закупок."
         )
         import pandas as pd
 
@@ -1014,7 +1009,7 @@ def render_calculator() -> None:
         if competition_open > len(competition_tenders):
             st.caption(
                 f"Показано {len(competition_tenders)} из {competition_open} "
-                "(ближайшие по дедлайну)."
+                "(ближайшие по срокам)."
             )
 
     if result.get("business_insight"):
@@ -1036,9 +1031,9 @@ def render_calculator() -> None:
     st.markdown("##### Сопоставимые проекты (детали)")
     analog_data = result.get("analog_data") or []
     if analog_count is None:
-        st.caption("Исторические данные (data/investmensts.csv) недоступны.")
+        st.caption("Архив рыночных данных временно недоступен.")
     elif analog_count == 0:
-        st.caption("Сопоставимых проектов в исторических данных не найдено.")
+        st.caption("Сопоставимых проектов в базе не найдено.")
     else:
         import pandas as pd
 
@@ -1096,8 +1091,6 @@ def render_calculator() -> None:
             st.session_state["calc_signatures"] = set()
             st.rerun()
     with hist_col3:
-        # len() непосредственно перед metric — чтобы после нажатия
-        # «Добавить» значение отобразилось сразу, а не на следующем rerun.
         st.metric(
             "Записей в истории",
             len(st.session_state["calc_history"]),
@@ -1201,8 +1194,8 @@ def _render_price_gauge(result: dict[str, Any]) -> None:
     st.caption(
         f"Минимум: **{_fmt_price(min_p)}** · Оптимум: **{_fmt_price(opt_p)}** · "
         f"Максимум: **{_fmt_price(max_p)}**. "
-        "Шкала носит рекомендательный характер: вероятность победы в тендере "
-        "требует данных о конкурентах и ценах победителей — в модели их нет."
+        "Оценка базируется на текущих рыночных показателях. "
+        "Прогноз вероятности победы требует анализа конкурентов."
     )
 
 
@@ -1329,9 +1322,9 @@ def _render_analogs_chart(result: dict[str, Any]) -> None:
 
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
     st.caption(
-        "Площади аналогов в источнике не указаны, поэтому цена за м² для них — "
-        f"сумма проекта в пересчёте на вашу площадь ({int(round(area))} м²). "
-        "Сопоставление ориентировочное."
+        "Детальные площади сопоставимых проектов могут быть недоступны, "
+        f"поэтому цена за м² рассчитана пропорционально текущему объекту ({int(round(area))} м²). "
+        "Данные носят ознакомительный характер."
     )
 
 

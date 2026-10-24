@@ -1,6 +1,6 @@
 investment_id,company_id,company_name,region,project_name,amount_rub,investment_year,investment_type,status,expected_roi_percent
 I001,C001,Alpha Ltd,Rostov Oblast,Warehouse Automation Upgrade,8500000,2025,CAPEX,Completed,12.5
-I002,C002,Beta GmbH,Rostov Oblast,Production Line Expansion,22000000,2025,CAPEX,Active,15.2
+I002,C002,Beta GmbH,Ростовская область,Production Line Expansion,22000000,2025,CAPEX,Active,15.2
 I003,C003,Gamma AG,Rostov Oblast,Digital Transformation Program,4500000,2025,OPEX,Active,18.0
 I004,C004,Delta Solutions,Krasnodar Krai,Office Relocation and Fit-out,3200000,2024,CAPEX,Completed,9.8
 I005,C005,Northstar Ltd,Krasnodar Krai,New Distribution Center,55000000,2025,CAPEX,Active,14.7

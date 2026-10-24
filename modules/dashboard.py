@@ -1,6 +1,6 @@
 """Сводная панель коммерческого блока — первый экран портала «Ростелеком Коммерческий».
 
-Модуль реализует точку входа ``render()`` для раздела «📊 Сводный дашборд»:
+Модуль реализует точку входа ``render()`` для раздела «Сводный дашборд»:
 
 * фирменный заголовок первого экрана и четыре KPI-метрики коммерческого блока;
 * donut «Распределение по отраслям» и горизонтальный bar «Инвест-проекты по стадиям»;
@@ -18,6 +18,11 @@ from typing import Any
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+
+try:  # при импорте из app.py (пакет modules доступен)
+    from modules.icons import icon_svg
+except ImportError:  # при запуске отдельно: streamlit run modules/dashboard.py
+    from icons import icon_svg
 
 # ---------------------------------------------------------------------------
 # Константы: пути, брендбук, цвета графиков
@@ -141,6 +146,37 @@ DASHBOARD_CSS = """
   margin-top: 0.9rem;
   font-size: 0.75rem;
   color: var(--rt-muted, #6B6B80);
+}
+
+/* ---------- Монохромные SVG-иконки ---------- */
+.rt-icon-svg {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.15em;
+  flex: 0 0 auto;
+}
+
+.dash-block-title .rt-icon-svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--rt-orange, #FF4F12);
+}
+
+.main-header .rt-icon-svg {
+  width: 1.7rem;
+  height: 1.7rem;
+  color: var(--rt-orange, #FF4F12);
+  vertical-align: -0.28rem;
+  margin-right: 0.25rem;
+}
+
+.dash-caption .rt-icon-svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  color: var(--rt-muted, #6B6B80);
+  vertical-align: -0.18em;
+  margin-right: 0.12rem;
 }
 
 @media (max-width: 768px) {
@@ -564,15 +600,21 @@ def _top_deals_frame(data: pd.DataFrame, limit: int = 5) -> pd.DataFrame:
 # Отрисовка
 # ---------------------------------------------------------------------------
 def _block_title(icon: str, text: str) -> None:
-    """Рисует заголовок блока в едином стиле дашборда."""
-    st.markdown(f'<div class="dash-block-title">{icon} {text}</div>', unsafe_allow_html=True)
+    """Рисует заголовок блока в едином стиле дашборда.
+
+    ``icon`` — имя монохромной SVG-иконки из :mod:`modules.icons`.
+    """
+    st.markdown(
+        f'<div class="dash-block-title">{icon_svg(icon)}<span>{text}</span></div>',
+        unsafe_allow_html=True,
+    )
 
 
 def _render_header() -> None:
     """Рисует заголовок первого экрана (класс .main-header из ТЗ)."""
     st.markdown(
-        """
-        <h1 class="main-header">📊 Сводная панель коммерческого блока</h1>
+        f"""
+        <h1 class="main-header">{icon_svg("dashboard")} Сводная панель коммерческого блока</h1>
         <p class="main-subheader">Обзор ключевых показателей и точек роста</p>
         """,
         unsafe_allow_html=True,
@@ -589,32 +631,36 @@ def _render_kpis(
     columns = st.columns(4)
     with columns[0]:
         st.metric(
-            "🏢 Компаний в базе",
+            "Компаний в базе",
             _fmt_int(len(companies)),
             delta="+12%",
+            icon=":material/apartment:",
             help="data/companies.csv · len(df_companies)",
         )
     with columns[1]:
         st.metric(
-            "📋 Активных тендеров",
+            "Активных тендеров",
             _fmt_int(len(tenders)),
             delta="+5 новых",
+            icon=":material/assignment:",
             help="data/tenders.csv · len(df_tenders)",
         )
     with columns[2]:
         st.metric(
-            "💰 Потенциал выручки",
+            "Потенциал выручки",
             _fmt_rub_short(revenue_potential),
             delta="+8%",
+            icon=":material/paid:",
             help="tenders.amount + investments.volume, авто-единицы",
         )
     with columns[3]:
         st.metric(
-            "⚪ Белых пятен",
+            "Белых пятен",
             _fmt_int(white_spots),
             delta="Требуют внимания",
             delta_color="inverse",
             delta_arrow="off",
+            icon=":material/location_off:",
             help="Регионы без клиентов РТ: companies[~is_rt_client].region.nunique()",
         )
 
@@ -633,7 +679,7 @@ def _render_demo_note(companies_demo: bool, tenders_demo: bool, investments_demo
     if not empty_sources:
         return
     st.markdown(
-        '<div class="dash-caption">ⓘ Демо-режим: '
+        f'<div class="dash-caption">{icon_svg("info")}Демо-режим: '
         + " · ".join(empty_sources)
         + " — файл пуст или в нём нет нужных колонок, показан сгенерированный набор.</div>",
         unsafe_allow_html=True,
@@ -654,19 +700,19 @@ def render() -> None:
     st.markdown("---")
     industry_column, stage_column = st.columns(2)
     with industry_column:
-        _block_title("🥧", "Распределение по отраслям")
+        _block_title("pie_chart", "Распределение по отраслям")
         st.plotly_chart(_industry_figure(companies), width="stretch", config=PLOTLY_CONFIG)
     with stage_column:
-        _block_title("🏗", "Инвест-проекты по стадиям")
+        _block_title("construction", "Инвест-проекты по стадиям")
         st.plotly_chart(_stage_figure(investments), width="stretch", config=PLOTLY_CONFIG)
 
     st.markdown("---")
     dynamics_column, deals_column = st.columns(2)
     with dynamics_column:
-        _block_title("📈", "Динамика тендеров по месяцам")
+        _block_title("trending_up", "Динамика тендеров по месяцам")
         st.plotly_chart(_dynamics_figure(tenders), width="stretch", config=PLOTLY_CONFIG)
     with deals_column:
-        _block_title("🏆", "Топ-5 сделок")
+        _block_title("emoji_events", "Топ-5 сделок")
         st.dataframe(
             _top_deals_frame(tenders),
             width="stretch",
@@ -688,7 +734,7 @@ if __name__ == "__main__":
     # поэтому единственный вызов st.set_page_config в app.py не конфликтует.
     st.set_page_config(
         page_title="Ростелеком | Сводный дашборд",
-        page_icon="📊",
+        page_icon=":material/dashboard:",
         layout="wide",
     )
     render()
